@@ -667,17 +667,42 @@ async function enviar() {
   };
 
   try {
-    await fetch(webhookUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    showToast('✓ Lançamento registrado!', 'success');
-    limpar();
+    // Google Apps Script requer envio via form para contornar CORS
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = webhookUrl;
+    form.target = 'hidden_iframe';
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    // Cria iframe oculto pra não redirecionar a página
+    let iframe = document.getElementById('hidden_iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = 'hidden_iframe';
+      iframe.id = 'hidden_iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    form.submit();
+    document.body.removeChild(form);
+
+    setTimeout(() => {
+      showToast('✓ Lançamento registrado!', 'success');
+      limpar();
+      btn.disabled = false;
+      btn.textContent = '＋ Registrar lançamento';
+    }, 1500);
+
   } catch (err) {
     showToast('Erro ao enviar. Verifique a URL.', 'error');
-  } finally {
     btn.disabled = false;
     btn.textContent = '＋ Registrar lançamento';
   }
