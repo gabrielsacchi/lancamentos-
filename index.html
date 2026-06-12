@@ -675,18 +675,18 @@ async function enviar() {
     const params = new URLSearchParams(payload).toString();
     const url = webhookUrl + '?' + params;
     
-    fetch(url, {
-      method: 'GET',
-      mode: 'no-cors',
-      redirect: 'follow'
-    });
+    // Abre em nova aba — contorna CORS completamente
+    const win = window.open(url, '_blank');
+    setTimeout(() => {
+      try { win.close(); } catch(e) {}
+    }, 3000);
 
     setTimeout(() => {
       showToast('✓ Lançamento registrado!', 'success');
       limpar();
       btn.disabled = false;
       btn.textContent = '＋ Registrar lançamento';
-    }, 2000);
+    }, 1000);
   } catch (err) {
     showToast('Erro ao enviar.', 'error');
     btn.disabled = false;
