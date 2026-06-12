@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1117">
+<title>Lançamentos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --accent: #4ade80;
+    --accent-dim: rgba(74, 222, 128, 0.12);
+    --accent-red: #f87171;
+    --accent-red-dim: rgba(248, 113, 113, 0.12);
+    --accent-blue: #60a5fa;
+    --text: #e8eaf0;
+    --text-muted: #6b7280;
+    --text-dim: #9ca3af;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 40px;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 56px 20px 20px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .header-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .header-title span { color: var(--accent); }
+  .header-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .config-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 10px;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.15s;
+  }
+  .config-btn:active { background: var(--surface2); }
+
+  /* NATUREZA TOGGLE */
+  .natureza-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+  }
+  .nat-btn {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .nat-btn.active-empresa {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+  }
+  .nat-btn.active-pessoal {
+    background: rgba(167, 139, 250, 0.1);
+    border-color: #a78bfa;
+    color: #a78bfa;
+  }
+
+  /* DIRECAO TOGGLE */
+  .direcao-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 0 20px;
+    margin-bottom: 20px;
+  }
+  .dir-btn {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    border-radius: var(--radius);
+    padding: 12px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .dir-btn .icon { font-size: 18px; }
+  .dir-btn.active-entrada {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .dir-btn.active-saida {
+    background: var(--accent-red-dim);
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+  }
+  .dir-btn.active-transferencia {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: #fbbf24;
+    color: #fbbf24;
+  }
+
+  /* FORM */
+  .form {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding-left: 2px;
+  }
+
+  .field input,
+  .field select {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 16px;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: inherit;
+  }
+  .field input:focus,
+  .field select:focus {
+    border-color: var(--accent);
+  }
+  .field input::placeholder { color: var(--text-muted); }
+
+  .select-wrap {
+    position: relative;
+  }
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+    font-size: 14px;
+  }
+  .select-wrap select { padding-right: 40px; }
+
+  /* VALOR */
+  .valor-wrap {
+    position: relative;
+  }
+  .valor-wrap .prefix {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .valor-wrap input { padding-left: 44px; }
+  .valor-wrap input.entrada { border-color: var(--accent); color: var(--accent); }
+  .valor-wrap input.saida { border-color: var(--accent-red); color: var(--accent-red); }
+
+  /* ROW 2COL */
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* SUBMIT */
+  .submit-btn {
+    margin: 8px 20px 0;
+    width: calc(100% - 40px);
+    background: var(--accent);
+    color: #0a1a0f;
+    border: none;
+    border-radius: var(--radius);
+    padding: 18px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: -0.2px;
+  }
+  .submit-btn:active { opacity: 0.85; transform: scale(0.98); }
+  .submit-btn.saida-btn { background: var(--accent-red); color: #1a0505; }
+  .submit-btn.transferencia-btn { background: #fbbf24; color: #1a1200; }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--accent); color: var(--accent); }
+  .toast.error { border-color: var(--accent-red); color: var(--accent-red); }
+
+  /* CONFIG PANEL */
+  .panel-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: flex-end;
+  }
+  .panel-overlay.open { display: flex; }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 48px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .panel h2 { font-size: 18px; font-weight: 700; }
+  .panel p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+  .panel .step {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+  .panel .step strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 14px; }
+  .panel .code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    word-break: break-all;
+    line-height: 1.5;
+  }
+  .panel-url-field {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    font-family: inherit;
+  }
+  .panel-url-field:focus { border-color: var(--accent); }
+  .panel-save-btn {
+    background: var(--accent);
+    color: #0a1a0f;
+    border: none;
+    border-radius: var(--radius);
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .panel-close {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 20px;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    margin-bottom: 4px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent-red);
+  }
+  .dot.connected { background: var(--accent); }
+  .status-text { font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="header-title">Novo <span>lançamento</span></div>
+      <div class="header-sub" id="data-hoje"></div>
+    </div>
+    <div class="config-btn" onclick="openPanel()">⚙</div>
+  </div>
+
+  <div class="status-indicator">
+    <div class="dot" id="status-dot"></div>
+    <div class="status-text" id="status-text">Planilha não configurada</div>
+  </div>
+
+  <!-- NATUREZA -->
+  <div class="natureza-toggle">
+    <button class="nat-btn active-empresa" id="nat-empresa" onclick="setNatureza('Empresa')">🏢 Empresa</button>
+    <button class="nat-btn" id="nat-pessoal" onclick="setNatureza('Pessoal')">👤 Pessoal</button>
+  </div>
+
+  <!-- DIREÇÃO -->
+  <div class="direcao-toggle">
+    <button class="dir-btn" id="dir-saida" onclick="setDirecao('Saída')">
+      <span class="icon">↑</span>Saída
+    </button>
+    <button class="dir-btn active-entrada" id="dir-entrada" onclick="setDirecao('Entrada')">
+      <span class="icon">↓</span>Entrada
+    </button>
+    <button class="dir-btn" id="dir-transferencia" onclick="setDirecao('Transferência')">
+      <span class="icon">⇄</span>Transf.
+    </button>
+  </div>
+
+  <!-- FORM -->
+  <div class="form">
+
+    <!-- VALOR -->
+    <div class="field">
+      <label>Valor</label>
+      <div class="valor-wrap">
+        <span class="prefix">R$</span>
+        <input type="number" id="valor" inputmode="decimal" step="0.01" placeholder="0,00" class="entrada">
+      </div>
+    </div>
+
+    <!-- DESCRIÇÃO -->
+    <div class="field">
+      <label>Descrição</label>
+      <input type="text" id="descricao" placeholder="Ex: Pagamento Clayton" autocomplete="off">
+    </div>
+
+    <!-- TIPO + CATEGORIA -->
+    <div class="row-2">
+      <div class="field">
+        <label>Tipo</label>
+        <div class="select-wrap">
+          <select id="tipo"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Categoria</label>
+        <div class="select-wrap">
+          <select id="categoria"></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTA + STATUS -->
+    <div class="row-2">
+      <div class="field">
+        <label>Conta</label>
+        <div class="select-wrap">
+          <select id="conta">
+            <option>Banco PJ</option>
+            <option>Banco PF</option>
+            <option>Cartão PJ</option>
+            <option>Cartão PF</option>
+            <option>Dinheiro</option>
+            <option>Reserva/Investimento</option>
+            <option>Outro</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <div class="select-wrap">
+          <select id="status">
+            <option>Pendente</option>
+            <option>Pago</option>
+            <option>Recebido</option>
+            <option>A receber</option>
+            <option>Atrasado</option>
+            <option>Cancelado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="field">
+      <label>Data</label>
+      <input type="date" id="data">
+    </div>
+
+    <!-- OBSERVAÇÃO (opcional) -->
+    <div class="field">
+      <label>Observação (opcional)</label>
+      <input type="text" id="observacao" placeholder="Notas adicionais...">
+    </div>
+
+  </div>
+
+  <div style="height:16px"></div>
+
+  <button class="submit-btn entrada-btn" id="submit-btn" onclick="enviar()">
+    ＋ Registrar lançamento
+  </button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CONFIG PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel(event)">
+  <div class="panel">
+    <h2>⚙ Configurar planilha</h2>
+    <p>Para que o app envie direto pra sua planilha, é preciso criar um Apps Script no Google Sheets. Siga os passos:</p>
+
+    <div class="step">
+      <strong>1. Abra sua planilha no Google Sheets</strong>
+      Clique em <em>Extensões → Apps Script</em>
+    </div>
+
+    <div class="step">
+      <strong>2. Cole este código e salve:</strong>
+      <div class="code" id="script-code">function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName("Lançamentos");
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([
+    data.data, data.mes, data.natureza,
+    data.direcao, data.tipo, data.categoria,
+    data.descricao, data.conta, data.valor,
+    data.status, data.observacao, ""
+  ]);
+  return ContentService
+    .createTextOutput(JSON.stringify({ok:true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+      </div>
+    </div>
+
+    <div class="step">
+      <strong>3. Implante como Web App</strong>
+      Clique em <em>Implantar → Nova implantação → Web App</em><br>
+      Execute como: <strong>Eu</strong> | Acesso: <strong>Qualquer pessoa</strong><br>
+      Copie a URL gerada.
+    </div>
+
+    <div class="step">
+      <strong>4. Cole a URL abaixo:</strong>
+    </div>
+
+    <input class="panel-url-field" id="webhook-url" placeholder="https://script.google.com/macros/s/..." />
+
+    <button class="panel-save-btn" onclick="salvarWebhook()">Salvar e conectar</button>
+    <div class="panel-close" onclick="closePanel()">Fechar</div>
+  </div>
+</div>
+
+<script>
+// ——— STATE ———
+let natureza = 'Empresa';
+let direcao = 'Entrada';
+
+const categoriasEmpresa = [
+  'Folha Funcionários','Serviços','Impostos','Simples Nacional',
+  'PGFN/Parcelamentos','Fornecedores','Materiais','Manutenção',
+  'Contador','Banco/taxas','Pró-labore','Retirada pessoal',
+  'Investimento na empresa','Reserva empresa','Equipamentos','Outros empresa'
+];
+const categoriasPessoal = [
+  'Moradia','Mercado','Luz','Água','Internet','Saúde','Transporte',
+  'Alimentação fora','Lazer','Roupas','Beleza/cuidados','Streaming/apps',
+  'Presentes','Viagens','Cursos/livros','Compras pessoais',
+  'Cartão pessoal','Emergências','Outros pessoal'
+];
+
+const tiposPorDirecao = {
+  'Entrada': ['Entrada mensal', 'Entrada extra', 'Dinheiro guardado usado'],
+  'Saída': ['Saída fixa', 'Saída variável', 'Guardar dinheiro', 'Pagamento dívida/imposto', 'Ajuste'],
+  'Transferência': ['Transferência interna', 'Ajuste']
+};
+
+// ——— INIT ———
+window.onload = () => {
+  // Data de hoje
+  const hoje = new Date();
+  document.getElementById('data').value = hoje.toISOString().split('T')[0];
+  document.getElementById('data-hoje').textContent =
+    hoje.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+
+  // Carrega webhook salvo
+  const saved = localStorage.getItem('webhook_url');
+  if (saved) {
+    document.getElementById('webhook-url').value = saved;
+    updateStatus(true);
+  }
+
+  updateTipos();
+  updateCategorias();
+  setDirecao('Entrada');
+};
+
+// ——— NATUREZA ———
+function setNatureza(v) {
+  natureza = v;
+  document.getElementById('nat-empresa').className = 'nat-btn' + (v==='Empresa' ? ' active-empresa' : '');
+  document.getElementById('nat-pessoal').className = 'nat-btn' + (v==='Pessoal' ? ' active-pessoal' : '');
+  updateCategorias();
+}
+
+// ——— DIREÇÃO ———
+function setDirecao(v) {
+  direcao = v;
+  ['entrada','saida','transferencia'].forEach(d => {
+    document.getElementById('dir-'+d).className = 'dir-btn';
+  });
+  const map = {Entrada:'entrada', Saída:'saida', Transferência:'transferencia'};
+  document.getElementById('dir-'+map[v]).className = 'dir-btn active-'+map[v];
+
+  const valor = document.getElementById('valor');
+  const btn = document.getElementById('submit-btn');
+  valor.className = map[v];
+  btn.className = 'submit-btn '+map[v]+'-btn';
+
+  updateTipos();
+}
+
+function updateTipos() {
+  const sel = document.getElementById('tipo');
+  sel.innerHTML = (tiposPorDirecao[direcao] || []).map(t => `<option>${t}</option>`).join('');
+}
+
+function updateCategorias() {
+  const cats = natureza === 'Empresa' ? categoriasEmpresa : categoriasPessoal;
+  const sel = document.getElementById('categoria');
+  sel.innerHTML = cats.map(c => `<option>${c}</option>`).join('');
+}
+
+// ——— STATUS ———
+function updateStatus(connected) {
+  document.getElementById('status-dot').className = 'dot' + (connected ? ' connected' : '');
+  document.getElementById('status-text').textContent = connected
+    ? 'Conectado à planilha' : 'Planilha não configurada';
+}
+
+// ——— WEBHOOK ———
+function salvarWebhook() {
+  const url = document.getElementById('webhook-url').value.trim();
+  if (!url.startsWith('https://')) { showToast('URL inválida', 'error'); return; }
+  localStorage.setItem('webhook_url', url);
+  updateStatus(true);
+  showToast('Conectado!', 'success');
+  closePanel();
+}
+
+// ——— ENVIAR ———
+async function enviar() {
+  const valor = document.getElementById('valor').value;
+  const descricao = document.getElementById('descricao').value.trim();
+  const data = document.getElementById('data').value;
+
+  if (!valor || parseFloat(valor) <= 0) { showToast('Informe o valor', 'error'); return; }
+  if (!descricao) { showToast('Informe a descrição', 'error'); return; }
+
+  const webhookUrl = localStorage.getItem('webhook_url');
+  if (!webhookUrl) { showToast('Configure a planilha primeiro ⚙', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  // Formata data e mês
+  const [ano, mes, dia] = data.split('-');
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const mesFormatado = meses[parseInt(mes)-1] + './' + ano;
+  const dataFormatada = dia+'/'+mes+'/'+ano;
+
+  const payload = {
+    data: dataFormatada,
+    mes: mesFormatado,
+    natureza,
+    direcao,
+    tipo: document.getElementById('tipo').value,
+    categoria: document.getElementById('categoria').value,
+    descricao,
+    conta: document.getElementById('conta').value,
+    valor: parseFloat(valor).toFixed(2).replace('.',','),
+    status: document.getElementById('status').value,
+    observacao: document.getElementById('observacao').value
+  };
+
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showToast('✓ Lançamento registrado!', 'success');
+    limpar();
+  } catch (err) {
+    showToast('Erro ao enviar. Verifique a URL.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '＋ Registrar lançamento';
+  }
+}
+
+function limpar() {
+  document.getElementById('valor').value = '';
+  document.getElementById('descricao').value = '';
+  document.getElementById('observacao').value = '';
+  const hoje = new Date();
+  document.getElementById('data').value = hoje.toISOString().split('T')[0];
+}
+
+// ——— TOAST ———
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// ——— PANEL ———
+function openPanel() {
+  document.getElementById('panel-overlay').classList.add('open');
+}
+function closePanel(e) {
+  if (!e || e.target === document.getElementById('panel-overlay')) {
+    document.getElementById('panel-overlay').classList.remove('open');
+  }
+}
+</script>
+</body>
+</html>
